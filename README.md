@@ -1,26 +1,25 @@
 # ✍️ Signature Cleaner
 
-A full-stack, production-ready toolkit for cleaning, extracting, and enhancing digital signatures from images.
-Features a beautiful web app, REST API, and batch CLI tool. Perfect for individuals, businesses, and developers.
+A professional FastAPI web application to **clean digital signatures**, remove backgrounds, and extract the signature on a pure white background—complete with smart auto-cropping, batch tools, API access, and a beautiful frontend.
 
 ---
 
 ## 🚀 Features
 
-* **Smart Processing:** Removes backgrounds, enhances signature clarity
-* **Modern Web UI:** Responsive, drag & drop, live previews, history gallery, beautiful gradients
-* **Presets:** Light, Medium, Dark, Pencil, and Scan modes
-* **Batch CLI:** Process multiple files or folders from the command line
-* **RESTful API:** Easily integrate into other apps or automate
-* **Multiple Formats:** Export cleaned signatures as PNG or JPG
-* **History:** View/download previous processed signatures
-* **Production Ready:** FastAPI backend, Docker, configuration files
-* **Cross-platform:** Works on Windows, macOS, Linux
-
+* 🎨 **Smart Background Removal** – Detects and removes paper noise or shadows automatically
+* ✂️ **Auto-Cropping** – Extracts just the signature with customizable padding
+* 🔧 **Advanced Controls** – Fine-tune threshold, smoothing, padding, invert, and noise reduction
+* 🎯 **Presets** – One-click settings for light, dark, pencil, or scanned signatures
+* 📱 **Responsive Design** – Works beautifully on desktop, tablet, and mobile
+* 💾 **Multiple Export Formats** – Download cleaned signatures as PNG or JPG
+* 📚 **History Gallery** – Manage and view previously processed signatures
+* ⚡ **Fast Processing** – Powered by OpenCV for instant results
+* 🛠️ **Batch CLI & REST API** – Integrate or automate with CLI or direct API calls
+* 🐳 **Docker-Ready** – Easy deployment anywhere
 
 ---
 
-## 🏁 Quick Start
+## ⚡ Quickstart
 
 ### 1. Clone and Set Up
 
@@ -35,106 +34,147 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
----
-
 ### 2. Start the Server
 
 ```bash
 python main.py
+# or
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open your browser to [http://localhost:8000](http://localhost:8000)
+### 3. Open in Browser
+
+Go to: [http://localhost:8000](http://localhost:8000)
+Enjoy the clean, responsive signature cleaning interface!
 
 ---
 
-### 3. Use the Web App
+## 🖥️ Web Usage
 
-* Drag & drop a signature image
-* Adjust cleaning controls or pick a preset
-* Preview and download the cleaned signature instantly
-* View and manage your processing history
+1. **Upload**: Drag & drop or click to upload a signature image (JPG, PNG, WEBP).
+2. **Adjust**: Use controls to tweak threshold, smoothing, padding, etc., or pick a preset.
+3. **Process**: Click **Process Signature**.
+4. **Download**: Save your cleaned signature as PNG or JPG.
+5. **History**: Access and manage previously processed signatures in the gallery.
 
 ---
 
-### 4. Batch Processing via CLI
+## 🔌 API Usage
 
-Process one or many images from the command line:
+**Process a signature via API:**
+
+```python
+import requests
+
+with open('signature.jpg', 'rb') as f:
+    files = {'file': f}
+    data = {
+        'threshold': 180,
+        'smoothing': 1.0,
+        'padding': 20,
+        'invert': False,
+        'noise_reduction': True
+    }
+    response = requests.post('http://localhost:8000/api/process', files=files, data=data)
+    print(response.json()['processed_url'])
+```
+
+### API Endpoints
+
+| Method | Path                 | Description               |
+| ------ | -------------------- | ------------------------- |
+| GET    | `/`                  | Web UI                    |
+| POST   | `/api/process`       | Process uploaded image    |
+| GET    | `/api/presets`       | List of available presets |
+| GET    | `/api/history`       | Processed image gallery   |
+| DELETE | `/api/clear-history` | Clear gallery/history     |
+| GET    | `/health`            | Health check              |
+
+---
+
+## ⚙️ Configuration
+
+* Edit variables in `main.py` or use `config.py` (if present) to customize presets, folder locations, upload size limits, etc.
+* The app will auto-create `media/uploads/` and `media/processed/` folders.
+
+---
+
+## 🛠️ Batch Processing (CLI)
+
+Want to process multiple signatures at once?
 
 ```bash
 python cli.py signature.jpg --preset light
 python cli.py -d ./signatures/ -o ./cleaned/
 ```
 
-See all options with `python cli.py --help`
+See all CLI options with: `python cli.py --help`
 
 ---
 
-### 5. Use as an API
+## 🐳 Docker Deployment (Optional)
 
-Send an image to the API and get back a cleaned version:
+### 1. **Create a Dockerfile**
 
-```python
-import requests
-with open('signature.jpg', 'rb') as f:
-    response = requests.post(
-        'http://localhost:8000/api/process',
-        files={'file': f},
-        data={'preset': 'medium'}
-    )
-    print(response.json()['processed_url'])
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    libopencv-dev \
+    python3-opencv \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
----
-
-### 6. Run with Docker
+### 2. **Build & Run**
 
 ```bash
-docker-compose up --build
-# Then visit http://localhost:8000
+docker build -t signature-cleaner .
+docker run -p 8000:8000 -v $(pwd)/media:/app/media signature-cleaner
 ```
 
 ---
 
-## ⚙️ Configuration
+## ☁️ Production Notes
 
-Edit `config.py` to change:
+* Use Nginx as a reverse proxy for security & SSL.
+* Configure `media/` storage according to your infra.
+* Deploy with Gunicorn & Uvicorn for production:
 
-* Default presets
-* Storage folders
-* Maximum upload size
-* App settings
-
----
-
-## 🛠️ Dependencies
-
-* FastAPI
-* Uvicorn
-* OpenCV (`opencv-python`)
-* Pillow
-* numpy
-* python-multipart
-* (See `requirements.txt` for details)
+  ```bash
+  gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+  ```
 
 ---
 
-## ✨ Screenshots
+## ❗ Troubleshooting
 
+* **OpenCV errors:** If issues arise, try `pip install opencv-python-headless` or install OpenCV system-wide.
+* **Permissions:** Make sure the `media/` directory is writable.
+* **Large Files:** Increase limits in FastAPI or your proxy if needed.
 
 ---
 
 ## 📜 License
 
-MIT License.
-Open for contributions and feedback!
+MIT License – Free for personal or commercial use.
 
 ---
 
 ## 👤 Author
 
-Developed by Shamsuddin Ahmed.
-Contact or open an issue for questions, requests, or improvements.
+Created by Shamsuddin Ahmed
 
 ---
 
-**Enjoy fast, beautiful, and effective digital signature cleaning!**
+**Happy signature cleaning! ✨**
