@@ -7,7 +7,6 @@ import numpy as np
 import os
 import uuid
 from datetime import datetime
-from pathlib import Path
 import base64
 
 from config import Config
