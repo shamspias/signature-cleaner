@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  signature-cleaner:
+    build: .
+    container_name: signature-cleaner
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
+      - ./static:/app/static
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - RELOAD=False
+      - MAX_UPLOAD_SIZE=10485760
+      - DEFAULT_THRESHOLD=180
+      - DEFAULT_SMOOTHING=1.0
+      - DEFAULT_PADDING=20
+      - CORS_ORIGINS=*
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: signature-cleaner-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./media:/app/media:ro
+    depends_on:
+      - signature-cleaner
+    restart: unless-stopped
+
+  # Optional: Redis for caching (future feature)
+  # redis:
+  #   image: redis:alpine
+  #   container_name: signature-cleaner-redis
+  #   restart: unless-stopped
+  #   volumes:
+  #     - redis-data:/data
+
+volumes:
+  redis-data:
+
+networks:
+  default:
+    name: signature-cleaner-network
