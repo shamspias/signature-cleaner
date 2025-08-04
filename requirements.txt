@@ -1,7 +1,34 @@
+# Core dependencies
 fastapi
 uvicorn[standard]
 python-multipart
+aiofiles
+
+# Image processing
 opencv-python
 numpy
 Pillow
-aiofiles
+
+# Optional: For better image processing
+opencv-contrib-python
+scikit-image
+
+# Configuration
+python-dotenv
+
+# Optional: For ML integration (uncomment if needed)
+# tensorflow==2.13.0  # For deep learning models
+# torch==2.0.1  # Alternative to TensorFlow
+# torchvision==0.15.2
+# onnx==1.14.1  # For model portability
+# onnxruntime==1.16.0
+
+# Optional: For advanced features
+# redis==5.0.1  # For caching
+# celery==5.3.4  # For background tasks
+# matplotlib==3.8.0  # For image analysis visualization
+
+# Development tools
+pytest
+black
+flake8
