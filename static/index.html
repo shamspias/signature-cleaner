@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signature Cleaner Pro</title>
+    <title>Signature Cleaner Pro - Enhanced</title>
     <style>
         :root {
             --primary: #6366f1;
@@ -68,6 +68,14 @@
             font-weight: 700;
         }
 
+        .version-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+
         .header-actions {
             display: flex;
             gap: 15px;
@@ -76,7 +84,7 @@
         /* Main Content */
         .main-content {
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 380px 1fr;
             gap: 30px;
             margin-top: 30px;
             min-height: calc(100vh - 200px);
@@ -171,6 +179,22 @@
             font-size: 0.85rem;
         }
 
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
         input[type="range"] {
             width: 100%;
             height: 6px;
@@ -259,8 +283,15 @@
             border-color: var(--primary);
         }
 
-        /* Process Button */
-        .process-btn {
+        /* Process Buttons */
+        .action-buttons-group {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .process-btn, .analyze-btn {
             width: 100%;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
@@ -271,19 +302,22 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
         }
 
-        .process-btn:hover:not(:disabled) {
+        .analyze-btn {
+            background: linear-gradient(135deg, var(--secondary) 0%, #14b8a6 100%);
+        }
+
+        .process-btn:hover:not(:disabled), .analyze-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
         }
 
-        .process-btn:disabled {
+        .process-btn:disabled, .analyze-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
@@ -336,6 +370,35 @@
             justify-content: center;
             color: #adb5bd;
             font-size: 1.2rem;
+        }
+
+        /* Confidence Indicator */
+        .confidence-indicator {
+            margin-top: 15px;
+            padding: 10px;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.5s ease;
+        }
+
+        .confidence-text {
+            font-size: 0.9rem;
+            color: var(--dark);
+            font-weight: 500;
         }
 
         /* Action Buttons */
@@ -492,8 +555,38 @@
             border-left: 4px solid var(--danger);
         }
 
+        .toast.info {
+            border-left: 4px solid var(--secondary);
+        }
+
         .toast-icon {
             font-size: 1.2rem;
+        }
+
+        /* Analysis Results */
+        .analysis-results {
+            background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%);
+            border: 1px solid #5eead4;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .analysis-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .analysis-label {
+            color: #047857;
+            font-weight: 500;
+        }
+
+        .analysis-value {
+            color: #065f46;
+            font-weight: 600;
         }
 
         /* Responsive */
@@ -563,6 +656,14 @@
             color: var(--dark);
             font-weight: 600;
         }
+
+        /* Method description tooltip */
+        .method-info {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 5px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -576,6 +677,7 @@
                     <path d="M2 12L12 17L22 12"></path>
                 </svg>
                 <h1>Signature Cleaner Pro</h1>
+                <span class="version-badge">v2.0 Enhanced</span>
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="clearHistory()">
@@ -595,12 +697,23 @@
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">Click to upload or drag & drop</div>
                     <div class="upload-subtext">Supports: JPG, PNG, WEBP</div>
-                    <input type="file" id="fileInput" accept="image/*">
+                    <input type="file" id="fileInput" accept="image/*" multiple>
                 </div>
             </div>
 
             <div class="controls-section">
                 <h3>Processing Controls</h3>
+
+                <div class="control-group">
+                    <label for="method">Processing Method</label>
+                    <select id="method">
+                        <option value="adaptive">Adaptive (Best for most cases)</option>
+                        <option value="otsu">Otsu (Automatic threshold)</option>
+                        <option value="manual">Manual (Classic method)</option>
+                        <option value="ml">ML-Enhanced (Experimental)</option>
+                    </select>
+                    <div class="method-info" id="methodInfo">Best for varying lighting conditions</div>
+                </div>
 
                 <div class="control-group">
                     <label>
@@ -627,6 +740,14 @@
                 </div>
 
                 <div class="control-group">
+                    <label>
+                        Min Signature Area
+                        <span class="control-value" id="minAreaValue">100</span>
+                    </label>
+                    <input type="range" id="minArea" min="10" max="500" value="100" step="10">
+                </div>
+
+                <div class="control-group">
                     <label>Options</label>
                     <div class="checkbox-group">
                         <input type="checkbox" id="invert">
@@ -636,6 +757,10 @@
                         <input type="checkbox" id="noiseReduction" checked>
                         <label for="noiseReduction">Noise Reduction</label>
                     </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enhanceContrast" checked>
+                        <label for="enhanceContrast">Enhance Contrast</label>
+                    </div>
                 </div>
             </div>
 
@@ -644,9 +769,19 @@
                 <div class="preset-buttons" id="presetButtons"></div>
             </div>
 
-            <button class="process-btn" id="processBtn" disabled>
-                <span>⚡</span> Process Signature
-            </button>
+            <div class="action-buttons-group">
+                <button class="analyze-btn" id="analyzeBtn" disabled>
+                    <span>🔍</span> Auto-Analyze Image
+                </button>
+                <button class="process-btn" id="processBtn" disabled>
+                    <span>⚡</span> Process Signature
+                </button>
+            </div>
+
+            <div id="analysisResults" class="analysis-results" style="display: none;">
+                <h4 style="margin-bottom: 10px; color: #047857;">Analysis Results</h4>
+                <div id="analysisContent"></div>
+            </div>
         </aside>
 
         <!-- Work Area -->
@@ -663,6 +798,14 @@
                     <div id="processedPreview" class="placeholder">
                         <span>Upload an image to process</span>
                     </div>
+                    <div id="confidenceIndicator" class="confidence-indicator" style="display: none;">
+                        <div class="confidence-text">
+                            Confidence: <span id="confidenceValue">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -678,8 +821,8 @@
                 <button class="btn btn-primary" onclick="downloadImage('jpg')">
                     <span>💾</span> Download JPG
                 </button>
-                <button class="btn btn-success" onclick="saveToGallery()">
-                    <span>📚</span> Save to Gallery
+                <button class="btn btn-success" onclick="processBatch()">
+                    <span>📚</span> Process All Uploaded
                 </button>
             </div>
 
@@ -707,18 +850,25 @@
 <script>
     // Global variables
     let currentFile = null;
+    let uploadedFiles = [];
     let processedImageUrl = null;
     let processedImageData = null;
+    let methodDescriptions = {};
 
     // DOM Elements
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const processBtn = document.getElementById('processBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
     const originalPreview = document.getElementById('originalPreview');
     const processedPreview = document.getElementById('processedPreview');
     const actionButtons = document.getElementById('actionButtons');
     const metadataDisplay = document.getElementById('metadataDisplay');
     const historyGrid = document.getElementById('historyGrid');
+    const methodSelect = document.getElementById('method');
+    const methodInfo = document.getElementById('methodInfo');
+    const analysisResults = document.getElementById('analysisResults');
+    const confidenceIndicator = document.getElementById('confidenceIndicator');
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
@@ -742,16 +892,29 @@
         document.getElementById('threshold').addEventListener('input', updateControlValue);
         document.getElementById('smoothing').addEventListener('input', updateControlValue);
         document.getElementById('padding').addEventListener('input', updateControlValue);
+        document.getElementById('minArea').addEventListener('input', updateControlValue);
 
-        // Process button
+        // Method selection
+        methodSelect.addEventListener('change', updateMethodInfo);
+
+        // Process buttons
         processBtn.addEventListener('click', processImage);
+        analyzeBtn.addEventListener('click', analyzeImage);
     }
 
     // File Handling
     function handleFileSelect(e) {
-        const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            loadFile(file);
+        const files = Array.from(e.target.files);
+        if (files.length > 0 && files[0].type.startsWith('image/')) {
+            currentFile = files[0];
+            uploadedFiles = files;
+            loadFile(files[0]);
+            processBtn.disabled = false;
+            analyzeBtn.disabled = false;
+
+            if (files.length > 1) {
+                showToast(`${files.length} files selected. Process All to batch process.`, 'info');
+            }
         }
     }
 
@@ -769,16 +932,19 @@
         e.preventDefault();
         uploadArea.classList.remove('dragover');
 
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            loadFile(file);
+        const files = Array.from(e.dataTransfer.files);
+        const imageFiles = files.filter(file => file.type.startsWith('image/'));
+
+        if (imageFiles.length > 0) {
+            currentFile = imageFiles[0];
+            uploadedFiles = imageFiles;
+            loadFile(imageFiles[0]);
+            processBtn.disabled = false;
+            analyzeBtn.disabled = false;
         }
     }
 
     function loadFile(file) {
-        currentFile = file;
-        processBtn.disabled = false;
-
         // Preview original
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -788,10 +954,10 @@
 
         // Update upload area
         uploadArea.innerHTML = `
-                <div class="upload-icon">✅</div>
-                <div class="upload-text">${file.name}</div>
-                <div class="upload-subtext">Click to change</div>
-            `;
+            <div class="upload-icon">✅</div>
+            <div class="upload-text">${file.name}</div>
+            <div class="upload-subtext">${uploadedFiles.length > 1 ? `+${uploadedFiles.length - 1} more files` : 'Click to change'}</div>
+        `;
     }
 
     // Control Updates
@@ -799,6 +965,16 @@
         const control = e.target;
         const valueDisplay = document.getElementById(control.id + 'Value');
         valueDisplay.textContent = control.value;
+    }
+
+    function updateMethodInfo() {
+        const descriptions = {
+            'adaptive': 'Best for varying lighting conditions',
+            'otsu': 'Automatically finds optimal threshold',
+            'manual': 'Use manual threshold setting',
+            'ml': 'AI-enhanced extraction (experimental)'
+        };
+        methodInfo.textContent = descriptions[methodSelect.value] || '';
     }
 
     // Load Presets
@@ -809,6 +985,9 @@
 
             const presetButtons = document.getElementById('presetButtons');
             presetButtons.innerHTML = '';
+
+            // Store method descriptions
+            methodDescriptions = data.methods || {};
 
             Object.entries(data.presets).forEach(([key, preset]) => {
                 const btn = document.createElement('button');
@@ -824,11 +1003,18 @@
 
     // Apply Preset
     function applyPreset(key, preset) {
+        if (preset.method) {
+            document.getElementById('method').value = preset.method;
+            updateMethodInfo();
+        }
         document.getElementById('threshold').value = preset.threshold;
         document.getElementById('thresholdValue').textContent = preset.threshold;
         document.getElementById('smoothing').value = preset.smoothing;
         document.getElementById('smoothingValue').textContent = preset.smoothing;
         document.getElementById('invert').checked = preset.invert;
+        if (preset.enhance_contrast !== undefined) {
+            document.getElementById('enhanceContrast').checked = preset.enhance_contrast;
+        }
 
         // Update active preset
         document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -842,6 +1028,71 @@
         }
     }
 
+    // Analyze Image
+    async function analyzeImage() {
+        if (!currentFile) return;
+
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<div class="spinner"></div> Analyzing...';
+
+        const formData = new FormData();
+        formData.append('file', currentFile);
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                displayAnalysis(data.analysis);
+
+                // Apply suggested settings
+                if (data.analysis.suggested_method) {
+                    document.getElementById('method').value = data.analysis.suggested_method;
+                    updateMethodInfo();
+                }
+                if (data.analysis.suggested_threshold) {
+                    document.getElementById('threshold').value = data.analysis.suggested_threshold;
+                    document.getElementById('thresholdValue').textContent = data.analysis.suggested_threshold;
+                }
+                if (data.analysis.needs_contrast_enhancement !== undefined) {
+                    document.getElementById('enhanceContrast').checked = data.analysis.needs_contrast_enhancement;
+                }
+
+                showToast('Analysis complete! Settings adjusted.', 'success');
+            }
+        } catch (error) {
+            showToast('Error analyzing image: ' + error.message, 'error');
+        } finally {
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<span>🔍</span> Auto-Analyze Image';
+        }
+    }
+
+    // Display Analysis Results
+    function displayAnalysis(analysis) {
+        analysisResults.style.display = 'block';
+
+        let html = '';
+        html += `<div class="analysis-item">
+            <span class="analysis-label">Image Quality:</span>
+            <span class="analysis-value">${analysis.image_quality || 'Unknown'}</span>
+        </div>`;
+        html += `<div class="analysis-item">
+            <span class="analysis-label">Suggested Method:</span>
+            <span class="analysis-value">${analysis.suggested_method || 'adaptive'}</span>
+        </div>`;
+        html += `<div class="analysis-item">
+            <span class="analysis-label">Mean Brightness:</span>
+            <span class="analysis-value">${Math.round(analysis.mean_brightness || 0)}</span>
+        </div>`;
+
+        document.getElementById('analysisContent').innerHTML = html;
+    }
+
     // Process Image
     async function processImage() {
         if (!currentFile) return;
@@ -851,11 +1102,14 @@
 
         const formData = new FormData();
         formData.append('file', currentFile);
+        formData.append('method', document.getElementById('method').value);
         formData.append('threshold', document.getElementById('threshold').value);
         formData.append('smoothing', document.getElementById('smoothing').value);
         formData.append('padding', document.getElementById('padding').value);
+        formData.append('min_signature_area', document.getElementById('minArea').value);
         formData.append('invert', document.getElementById('invert').checked);
         formData.append('noise_reduction', document.getElementById('noiseReduction').checked);
+        formData.append('enhance_contrast', document.getElementById('enhanceContrast').checked);
 
         try {
             const response = await fetch('/api/process', {
@@ -871,6 +1125,11 @@
 
                 // Display processed image
                 processedPreview.innerHTML = `<img src="${data.processed_preview}" class="preview-image" alt="Processed">`;
+
+                // Show confidence if available
+                if (data.metadata && data.metadata.confidence !== undefined) {
+                    showConfidence(data.metadata.confidence);
+                }
 
                 // Show action buttons
                 actionButtons.style.display = 'flex';
@@ -893,6 +1152,65 @@
         }
     }
 
+    // Show Confidence
+    function showConfidence(confidence) {
+        confidenceIndicator.style.display = 'block';
+        const percentage = Math.round(confidence * 100);
+        document.getElementById('confidenceValue').textContent = `${percentage}%`;
+        document.getElementById('confidenceFill').style.width = `${percentage}%`;
+
+        // Color based on confidence
+        const fill = document.getElementById('confidenceFill');
+        if (percentage >= 80) {
+            fill.style.background = 'var(--success)';
+        } else if (percentage >= 50) {
+            fill.style.background = 'var(--warning)';
+        } else {
+            fill.style.background = 'var(--danger)';
+        }
+    }
+
+    // Process Batch
+    async function processBatch() {
+        if (uploadedFiles.length <= 1) {
+            showToast('No additional files to process', 'info');
+            return;
+        }
+
+        const formData = new FormData();
+        uploadedFiles.forEach(file => {
+            formData.append('files', file);
+        });
+
+        // Add processing parameters
+        formData.append('method', document.getElementById('method').value);
+        formData.append('threshold', document.getElementById('threshold').value);
+        formData.append('smoothing', document.getElementById('smoothing').value);
+        formData.append('padding', document.getElementById('padding').value);
+        formData.append('invert', document.getElementById('invert').checked);
+        formData.append('noise_reduction', document.getElementById('noiseReduction').checked);
+        formData.append('enhance_contrast', document.getElementById('enhanceContrast').checked);
+
+        try {
+            showToast(`Processing ${uploadedFiles.length} files...`, 'info');
+
+            const response = await fetch('/api/process-batch', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            const successful = data.results.filter(r => r.success).length;
+            showToast(`Processed ${successful}/${uploadedFiles.length} files successfully!`, 'success');
+
+            // Reload history to show new files
+            loadHistory();
+        } catch (error) {
+            showToast('Error processing batch: ' + error.message, 'error');
+        }
+    }
+
     // Display Metadata
     function displayMetadata(metadata, parameters) {
         metadataDisplay.style.display = 'block';
@@ -901,23 +1219,35 @@
 
         if (metadata.signature_found) {
             metadataHtml += `
-                    <div class="metadata-item">
-                        <span class="metadata-label">Original Size</span>
-                        <span class="metadata-value">${metadata.original_size[0]} × ${metadata.original_size[1]} px</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Processed Size</span>
-                        <span class="metadata-value">${metadata.processed_size[0]} × ${metadata.processed_size[1]} px</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Threshold Used</span>
-                        <span class="metadata-value">${parameters.threshold}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Smoothing Applied</span>
-                        <span class="metadata-value">${parameters.smoothing}</span>
-                    </div>
-                `;
+                <div class="metadata-item">
+                    <span class="metadata-label">Method Used</span>
+                    <span class="metadata-value">${parameters.method || 'Unknown'}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Original Size</span>
+                    <span class="metadata-value">${metadata.original_size[0]} × ${metadata.original_size[1]} px</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Processed Size</span>
+                    <span class="metadata-value">${metadata.processed_size[0]} × ${metadata.processed_size[1]} px</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Components Found</span>
+                    <span class="metadata-value">${metadata.num_components || 'N/A'}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Signature Area</span>
+                    <span class="metadata-value">${metadata.total_signature_area || 'N/A'} px²</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Threshold Used</span>
+                    <span class="metadata-value">${parameters.threshold}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Contrast Enhanced</span>
+                    <span class="metadata-value">${parameters.enhance_contrast ? 'Yes' : 'No'}</span>
+                </div>
+            `;
         } else {
             metadataHtml = '<p style="color: #ef4444;">No signature detected in the image</p>';
         }
@@ -937,10 +1267,6 @@
         showToast(`Downloading as ${format.toUpperCase()}...`, 'success');
     }
 
-    function saveToGallery() {
-        showToast('Saved to gallery!', 'success');
-    }
-
     // History Functions
     async function loadHistory() {
         try {
@@ -958,9 +1284,9 @@
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 item.innerHTML = `
-                        <img src="${file.processed_url}" alt="Signature">
-                        <div class="history-date">${formatDate(file.timestamp)}</div>
-                    `;
+                    <img src="${file.processed_url}" alt="Signature">
+                    <div class="history-date">${formatDate(file.timestamp)}</div>
+                `;
                 item.onclick = () => viewHistoryItem(file);
                 historyGrid.appendChild(item);
             });
@@ -976,6 +1302,7 @@
         }
         processedImageUrl = file.processed_url;
         actionButtons.style.display = 'flex';
+        confidenceIndicator.style.display = 'none';
     }
 
     async function clearHistory() {
@@ -994,6 +1321,8 @@
                 originalPreview.innerHTML = '<div class="placeholder"><span>No image uploaded</span></div>';
                 actionButtons.style.display = 'none';
                 metadataDisplay.style.display = 'none';
+                confidenceIndicator.style.display = 'none';
+                analysisResults.style.display = 'none';
             }
         } catch (error) {
             showToast('Error clearing history', 'error');
@@ -1015,7 +1344,7 @@
 
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
-        const icon = type === 'success' ? '✅' : '❌';
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
 
         toast.className = `toast ${type}`;
         toast.querySelector('.toast-icon').textContent = icon;
